@@ -96,8 +96,7 @@ button:focus-visible, input:focus-visible {
 .side-tag {
   font-family: 'Cinzel', serif;
   font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.2em;
   opacity: 0.85;
 }
 
@@ -319,6 +318,32 @@ button:focus-visible, input:focus-visible {
 
 .dice-link { background: none; border: none; cursor: pointer; }
 .dice-icon { font-size: 16px; }
+
+/* ---------------------------------------------------------
+   Mobile refinements — keep both score panels visible
+   side-by-side on narrow phones, in portrait or landscape
+--------------------------------------------------------- */
+@media (max-width: 639px) {
+  .hex-frame {
+    clip-path: polygon(
+      10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%,
+      0 100%, 0 10px
+    );
+  }
+  .point-btn { padding: 9px 0; }
+  .hold-btn {
+    margin-top: 6px;
+    padding: 7px 0;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+  .correction-link {
+    margin-top: 6px;
+    font-size: 10px;
+  }
+  .side-tag { letter-spacing: 0.12em; }
+  .nexus-gem { width: 14px; height: 14px; border-radius: 2px; }
+}
 
 /* ---------------------------------------------------------
    Score feedback

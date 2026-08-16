@@ -47,91 +47,74 @@
           TRACKER</p>
       </div>
 
+      
       <form id="setup-form" class="hex-frame bg-[#0A1428] p-7 space-y-6">
-
+ 
         <div>
-          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#0BC6E3] mb-2"
-            style="font-weight:600;">
+          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#0BC6E3] mb-2" style="font-weight:600;">
             <span class="w-2 h-2 bg-[#0BC6E3] inline-block" style="transform:rotate(45deg);"></span> BLUE SIDE
           </label>
           <input id="p1-name" type="text" maxlength="18" placeholder="Player name" required
             class="w-full bg-[#1E2328] border border-[#3C4048] focus:border-[#0BC6E3] rounded-sm px-4 py-3 text-[#F0E6D2] placeholder:text-[#5B5A56] outline-none transition-colors font-body" />
         </div>
-
+ 
         <div>
-          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#E0433E] mb-2"
-            style="font-weight:600;">
+          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#E0433E] mb-2" style="font-weight:600;">
             <span class="w-2 h-2 bg-[#E0433E] inline-block" style="transform:rotate(45deg);"></span> RED SIDE
           </label>
           <input id="p2-name" type="text" maxlength="18" placeholder="Player name" required
             class="w-full bg-[#1E2328] border border-[#3C4048] focus:border-[#E0433E] rounded-sm px-4 py-3 text-[#F0E6D2] placeholder:text-[#5B5A56] outline-none transition-colors font-body" />
         </div>
-
+ 
         <div>
-          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#C8AA6E] mb-3"
-            style="font-weight:600;">
+          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#C8AA6E] mb-3" style="font-weight:600;">
             <span class="w-2 h-2 bg-[#C8AA6E] inline-block" style="transform:rotate(45deg);"></span> FIRST TO
           </label>
           <div class="grid grid-cols-4 gap-2" id="win-presets">
-            <button type="button" data-val="7" class="preset-btn font-display text-lg py-2.5"
-              style="font-weight:600;">7</button>
-            <button type="button" data-val="8" class="preset-btn font-display text-lg py-2.5"
-              style="font-weight:600;">8</button>
-            <button type="button" data-val="9" class="preset-btn font-display text-lg py-2.5"
-              style="font-weight:600;">9</button>
-            <button type="button" data-val="10" class="preset-btn font-display text-lg py-2.5"
-              style="font-weight:600;">10</button>
+            <button type="button" data-val="7" class="preset-btn font-display text-lg py-2.5" style="font-weight:600;">7</button>
+            <button type="button" data-val="8" class="preset-btn font-display text-lg py-2.5" style="font-weight:600;">8</button>
+            <button type="button" data-val="9" class="preset-btn font-display text-lg py-2.5" style="font-weight:600;">9</button>
+            <button type="button" data-val="10" class="preset-btn font-display text-lg py-2.5" style="font-weight:600;">10</button>
           </div>
           <div class="flex items-center gap-2 mt-2">
-            <button type="button" id="custom-points-toggle" class="custom-toggle-btn font-display text-xs shrink-0"
-              style="font-weight:600;">✎ CUSTOM</button>
-            <input type="number" id="custom-points-input" min="1" max="99" placeholder="Custom points"
-              class="custom-input hidden font-display" style="font-weight:600;" />
+            <button type="button" id="custom-points-toggle" class="custom-toggle-btn font-display text-xs shrink-0" style="font-weight:600;">✎ CUSTOM</button>
+            <input type="number" id="custom-points-input" min="1" max="99" placeholder="Custom points" class="custom-input hidden font-display" style="font-weight:600;" />
           </div>
           <input type="hidden" id="win-points" value="8" />
         </div>
-
+ 
         <div>
-          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#C8AA6E] mb-3"
-            style="font-weight:600;">
+          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#C8AA6E] mb-3" style="font-weight:600;">
             <span class="w-2 h-2 bg-[#C8AA6E] inline-block" style="transform:rotate(45deg);"></span> GAME LENGTH
           </label>
           <div class="grid grid-cols-4 gap-2" id="length-presets">
-            <button type="button" data-val="15" class="preset-btn font-display text-base py-2.5"
-              style="font-weight:600;">15m</button>
-            <button type="button" data-val="20" class="preset-btn font-display text-base py-2.5"
-              style="font-weight:600;">20m</button>
-            <button type="button" data-val="30" class="preset-btn font-display text-base py-2.5"
-              style="font-weight:600;">30m</button>
-            <button type="button" data-val="45" class="preset-btn font-display text-base py-2.5"
-              style="font-weight:600;">45m</button>
+            <button type="button" data-val="15" class="preset-btn font-display text-base py-2.5" style="font-weight:600;">15m</button>
+            <button type="button" data-val="20" class="preset-btn font-display text-base py-2.5" style="font-weight:600;">20m</button>
+            <button type="button" data-val="30" class="preset-btn font-display text-base py-2.5" style="font-weight:600;">30m</button>
+            <button type="button" data-val="45" class="preset-btn font-display text-base py-2.5" style="font-weight:600;">45m</button>
           </div>
           <div class="flex items-center gap-2 mt-2">
-            <button type="button" id="custom-length-toggle" class="custom-toggle-btn font-display text-xs shrink-0"
-              style="font-weight:600;">✎ CUSTOM</button>
-            <input type="number" id="custom-length-input" min="1" max="240" placeholder="Custom minutes"
-              class="custom-input hidden font-display" style="font-weight:600;" />
+            <button type="button" id="custom-length-toggle" class="custom-toggle-btn font-display text-xs shrink-0" style="font-weight:600;">✎ CUSTOM</button>
+            <input type="number" id="custom-length-input" min="1" max="240" placeholder="Custom minutes" class="custom-input hidden font-display" style="font-weight:600;" />
           </div>
           <input type="hidden" id="game-length" value="30" />
         </div>
-
-        <button type="submit" class="gold-btn w-full py-3.5 font-display text-lg tracking-wide"
-          style="font-weight:700;">
+ 
+        <button type="submit" class="gold-btn w-full py-3.5 font-display text-lg tracking-wide" style="font-weight:700;">
           ENTER THE RIFT
         </button>
         <p id="form-error" class="hidden text-[#E0433E] text-xs text-center font-body">Fill in both names to begin.</p>
       </form>
-
-      <button id="setup-dice-btn"
-        class="dice-link mx-auto mt-6 flex items-center gap-2 font-display text-xs tracking-[0.2em] text-[#8B98A5] hover:text-[#C8AA6E] transition-colors"
-        style="font-weight:600;">
+ 
+      <button id="setup-dice-btn" class="dice-link mx-auto mt-6 flex items-center gap-2 font-display text-xs tracking-[0.2em] text-[#8B98A5] hover:text-[#C8AA6E] transition-colors" style="font-weight:600;">
         <span class="dice-icon">⚄</span> ROLL FOR FIRST PICK
       </button>
     </div>
   </main>
-
+ 
+  <!-- ============ MATCH SCREEN ============ -->
   <main id="match-screen" class="relative z-10 min-h-screen hidden flex-col px-4 pt-6 pb-16">
-
+ 
     <div class="max-w-3xl mx-auto w-full mb-5">
       <div class="flex justify-center mb-3">
         <div class="timer-chip">
@@ -140,8 +123,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between flex-wrap gap-3">
-        <div class="font-display text-xs tracking-[0.3em] text-[#8B98A5]" style="font-weight:600;">FIRST TO <span
-            id="target-label" class="text-[#C8AA6E]">8</span> PTS</div>
+        <div class="font-display text-xs tracking-[0.3em] text-[#8B98A5]" style="font-weight:600;">FIRST TO <span id="target-label" class="text-[#C8AA6E]">8</span> PTS</div>
         <div class="flex items-center gap-2">
           <button id="match-dice-btn" class="action-btn" title="Roll for first pick">
             <span class="action-icon">⚄</span><span>DICE</span>
@@ -152,70 +134,77 @@
         </div>
       </div>
     </div>
-
-    <div class="flex-1 flex flex-col md:flex-row items-stretch gap-4 max-w-3xl mx-auto w-full">
-
-      <section class="flex-1 hex-frame side-blue p-6 flex flex-col items-center">
-        <div class="side-tag text-[#0BC6E3]">BLUE SIDE</div>
-        <h2 id="p1-label" class="font-display text-xl tracking-wide text-[#F0E6D2] truncate max-w-full mt-1"
-          style="font-weight:700;">Player One</h2>
-        <div id="p1-score" class="font-display text-8xl md:text-9xl my-4 text-[#F0E6D2] tabular-nums">0</div>
-        <div class="w-full h-2 bg-[#1E2328] rounded-full overflow-hidden mb-1 border border-[#0BC6E3]/20">
-          <div id="p1-bar" class="bar-fill h-full rounded-full bg-gradient-to-r from-[#0BC6E3] to-[#7FE8DD]"
-            style="width:0%;"></div>
+ 
+    <div class="flex-1 flex flex-row items-stretch gap-2 sm:gap-3 md:gap-4 max-w-3xl mx-auto w-full">
+ 
+      <!-- BLUE SIDE PANEL -->
+      <section class="flex-1 min-w-0 hex-frame side-blue p-2.5 sm:p-5 md:p-6 flex flex-col items-center">
+        <div class="side-tag text-[9px] sm:text-[11px] text-[#0BC6E3]">BLUE SIDE</div>
+        <h2 id="p1-label" class="font-display text-xs sm:text-lg md:text-xl tracking-wide text-[#F0E6D2] truncate max-w-full mt-1" style="font-weight:700;">Player One</h2>
+        <div id="p1-score" class="font-display text-4xl sm:text-6xl md:text-8xl lg:text-9xl my-1 sm:my-3 md:my-4 text-[#F0E6D2] tabular-nums">0</div>
+        <div class="w-full h-1.5 sm:h-2 bg-[#1E2328] rounded-full overflow-hidden mb-1 border border-[#0BC6E3]/20">
+          <div id="p1-bar" class="bar-fill h-full rounded-full bg-gradient-to-r from-[#0BC6E3] to-[#7FE8DD]" style="width:0%;"></div>
         </div>
-        <div class="text-xs text-[#8B98A5] font-body mb-5"><span id="p1-frac">0 / 8</span></div>
-
+        <div class="text-[9px] sm:text-xs text-[#8B98A5] font-body mb-2 sm:mb-4 md:mb-5"><span id="p1-frac">0 / 8</span></div>
+ 
         <button data-player="1" data-delta="1" class="point-btn point-btn-blue btn-press w-full">
-          <span class="font-display text-lg" style="font-weight:700;">+1 POINT</span>
+          <span class="font-display text-xs sm:text-base md:text-lg" style="font-weight:700;">
+            <span class="sm:hidden">+1</span><span class="hidden sm:inline">+1 POINT</span>
+          </span>
         </button>
-        <button id="p1-hold" data-player="1" class="hold-btn btn-press" disabled>⬡ HOLD FOR THE WIN</button>
-        <button data-player="1" data-delta="-1" class="correction-link">− undo a point</button>
+        <button id="p1-hold" data-player="1" class="hold-btn btn-press" disabled>
+          <span class="sm:hidden">⬡ HOLD</span><span class="hidden sm:inline">⬡ HOLD FOR THE WIN</span>
+        </button>
+        <button data-player="1" data-delta="-1" class="correction-link">
+          <span class="sm:hidden">− undo</span><span class="hidden sm:inline">− undo a point</span>
+        </button>
       </section>
-
-      <div class="flex md:flex-col items-center justify-center gap-3 py-2 md:py-0 md:px-1">
-        <div class="hidden md:block flex-1 w-px bg-gradient-to-b from-transparent via-[#C8AA6E]/25 to-transparent">
-        </div>
+ 
+      <!-- NEXUS DIVIDER -->
+      <div class="flex flex-col items-center justify-center gap-1.5 sm:gap-3 px-0.5 sm:px-1 shrink-0">
+        <div class="hidden sm:block flex-1 w-px bg-gradient-to-b from-transparent via-[#C8AA6E]/25 to-transparent"></div>
         <div class="nexus-gem crest-pulse"></div>
-        <span class="font-display text-xs tracking-[0.3em] text-[#8B98A5]" style="font-weight:700;">VS</span>
-        <div class="hidden md:block flex-1 w-px bg-gradient-to-b from-transparent via-[#C8AA6E]/25 to-transparent">
-        </div>
+        <span class="font-display text-[10px] sm:text-xs tracking-[0.3em] text-[#8B98A5]" style="font-weight:700;">VS</span>
+        <div class="hidden sm:block flex-1 w-px bg-gradient-to-b from-transparent via-[#C8AA6E]/25 to-transparent"></div>
       </div>
-
-      <section class="flex-1 hex-frame side-red p-6 flex flex-col items-center">
-        <div class="side-tag text-[#E0433E]">RED SIDE</div>
-        <h2 id="p2-label" class="font-display text-xl tracking-wide text-[#F0E6D2] truncate max-w-full mt-1"
-          style="font-weight:700;">Player Two</h2>
-        <div id="p2-score" class="font-display text-8xl md:text-9xl my-4 text-[#F0E6D2] tabular-nums">0</div>
-        <div class="w-full h-2 bg-[#1E2328] rounded-full overflow-hidden mb-1 border border-[#E0433E]/20">
-          <div id="p2-bar" class="bar-fill h-full rounded-full bg-gradient-to-r from-[#E0433E] to-[#F2897F]"
-            style="width:0%;"></div>
+ 
+      <!-- RED SIDE PANEL -->
+      <section class="flex-1 min-w-0 hex-frame side-red p-2.5 sm:p-5 md:p-6 flex flex-col items-center">
+        <div class="side-tag text-[9px] sm:text-[11px] text-[#E0433E]">RED SIDE</div>
+        <h2 id="p2-label" class="font-display text-xs sm:text-lg md:text-xl tracking-wide text-[#F0E6D2] truncate max-w-full mt-1" style="font-weight:700;">Player Two</h2>
+        <div id="p2-score" class="font-display text-4xl sm:text-6xl md:text-8xl lg:text-9xl my-1 sm:my-3 md:my-4 text-[#F0E6D2] tabular-nums">0</div>
+        <div class="w-full h-1.5 sm:h-2 bg-[#1E2328] rounded-full overflow-hidden mb-1 border border-[#E0433E]/20">
+          <div id="p2-bar" class="bar-fill h-full rounded-full bg-gradient-to-r from-[#E0433E] to-[#F2897F]" style="width:0%;"></div>
         </div>
-        <div class="text-xs text-[#8B98A5] font-body mb-5"><span id="p2-frac">0 / 8</span></div>
-
+        <div class="text-[9px] sm:text-xs text-[#8B98A5] font-body mb-2 sm:mb-4 md:mb-5"><span id="p2-frac">0 / 8</span></div>
+ 
         <button data-player="2" data-delta="1" class="point-btn point-btn-red btn-press w-full">
-          <span class="font-display text-lg" style="font-weight:700;">+1 POINT</span>
+          <span class="font-display text-xs sm:text-base md:text-lg" style="font-weight:700;">
+            <span class="sm:hidden">+1</span><span class="hidden sm:inline">+1 POINT</span>
+          </span>
         </button>
-        <button id="p2-hold" data-player="2" class="hold-btn btn-press" disabled>⬡ HOLD FOR THE WIN</button>
-        <button data-player="2" data-delta="-1" class="correction-link">− undo a point</button>
+        <button id="p2-hold" data-player="2" class="hold-btn btn-press" disabled>
+          <span class="sm:hidden">⬡ HOLD</span><span class="hidden sm:inline">⬡ HOLD FOR THE WIN</span>
+        </button>
+        <button data-player="2" data-delta="-1" class="correction-link">
+          <span class="sm:hidden">− undo</span><span class="hidden sm:inline">− undo a point</span>
+        </button>
       </section>
     </div>
-
+ 
     <div class="max-w-3xl mx-auto w-full flex flex-col items-center gap-3 mt-6">
       <button id="end-round-btn" class="end-round-btn hidden">⚔ END ROUND · 2 LEFT</button>
-      <button id="reset-scores-btn"
-        class="font-display text-xs tracking-[0.2em] text-[#8B98A5] hover:text-[#F0E6D2] transition-colors"
-        style="font-weight:600;">↺ RESET SCORES · SAME PLAYERS</button>
+      <button id="reset-scores-btn" class="font-display text-xs tracking-[0.2em] text-[#8B98A5] hover:text-[#F0E6D2] transition-colors" style="font-weight:600;">↺ RESET SCORES · SAME PLAYERS</button>
     </div>
   </main>
-
-
+ 
+  <!-- Modals (Winner overlay + Dice roll-off + Final Rounds) are built and injected by components.js -->
+ 
   <footer class="site-footer">
-    © Unofficial League of Legends: Riftbound match tracker — Made by domnanob
+    © Unofficial League of Legends: Riftbound match tracker — not affiliated with Riot Games. Made by domnanob.
   </footer>
-
-  <script src="components.js"></script>
-  <script src="script.js"></script>
+ 
+<script src="components.js"></script>
+<script src="script.js"></script>
 </body>
-
 </html>

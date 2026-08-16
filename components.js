@@ -1,3 +1,11 @@
+/* ==========================================================
+   Summoner's Tally — Modal Components
+   A tiny reusable Modal base class, plus two components built
+   on top of it: the Winner modal and the Dice roll-off modal.
+   Both are constructed and injected into <body> at runtime,
+   so index.html stays free of one-off overlay markup.
+   ========================================================== */
+
 class Modal {
   constructor(id, innerHTML) {
     this.id = id;
@@ -18,6 +26,13 @@ class Modal {
   close() { this.el.classList.add('hidden'); this.el.classList.remove('flex'); }
 }
 
+/* ------------------------------------------------------------
+   Winner Modal component
+   showWin(name, points, reason) — reason is 'hold' (a player
+   held at/above target) or 'points' (final rounds ran out and
+   this player had the most points).
+   showDraw(points) — final rounds ran out level.
+------------------------------------------------------------ */
 function createWinnerModal({ onRematch, onNewMatch } = {}) {
   const modal = new Modal('winner-overlay', `
     <div class="absolute inset-0 overflow-hidden pointer-events-none" data-role="shards"></div>
@@ -84,6 +99,11 @@ function createWinnerModal({ onRematch, onNewMatch } = {}) {
   };
 }
 
+/* ------------------------------------------------------------
+   Confirm Modal component
+   Generic yes/cancel dialog for destructive actions.
+   show({ title, message, confirmText, onConfirm }) opens it.
+------------------------------------------------------------ */
 function createConfirmModal() {
   const modal = new Modal('confirm-overlay', `
     <div class="relative pop-in hex-frame bg-[#0A1428] px-8 py-9 max-w-sm w-full text-center">
@@ -118,7 +138,12 @@ function createConfirmModal() {
     },
   };
 }
-
+/* ------------------------------------------------------------
+   Final Rounds Modal component
+   Shown once the game timer hits zero. Informs both players
+   they get two more rounds to score or hold; otherwise the
+   higher point total wins, and equal totals are a draw.
+------------------------------------------------------------ */
 function createFinalRoundsModal({ onBegin } = {}) {
   const modal = new Modal('final-rounds-overlay', `
     <div class="relative pop-in hex-frame bg-[#0A1428] px-8 py-10 max-w-sm w-full text-center">
@@ -140,6 +165,11 @@ function createFinalRoundsModal({ onBegin } = {}) {
   return { show: () => modal.open() };
 }
 
+/* ------------------------------------------------------------
+   Dice Roll-off Modal component
+   show(blueName, redName) opens the modal, ready to roll.
+   Rolls one six-sided die per side to decide who picks first.
+------------------------------------------------------------ */
 function createDiceModal() {
   const diePips = `
     <span class="pip"></span><span class="pip"></span><span class="pip"></span>
