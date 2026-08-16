@@ -1,4 +1,4 @@
-# Summoner's Tally
+# Riftbound Match tracker
 
 A dark-mode, Hextech/League of Legends–styled match point tracker built for tabletop games of **Riftbound TCG** (or any two-player, points-to-win game). Track points for a Blue Side and Red Side, hold for the win, run a game clock with sudden-death final rounds, and settle who goes first with a dice roll-off.
 
