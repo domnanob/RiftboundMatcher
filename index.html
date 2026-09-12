@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
   <title>Riftbound · Match Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,25 +47,27 @@
           TRACKER</p>
       </div>
 
-      
+
       <form id="setup-form" class="hex-frame bg-[#0A1428] p-7 space-y-6">
- 
+
         <div>
           <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#0BC6E3] mb-2" style="font-weight:600;">
             <span class="w-2 h-2 bg-[#0BC6E3] inline-block" style="transform:rotate(45deg);"></span> BLUE SIDE
           </label>
-          <input id="p1-name" type="text" maxlength="18" placeholder="Player name" required
-            class="w-full bg-[#1E2328] border border-[#3C4048] focus:border-[#0BC6E3] rounded-sm px-4 py-3 text-[#F0E6D2] placeholder:text-[#5B5A56] outline-none transition-colors font-body" />
+          <button type="button" id="p1-champion-btn" class="champion-pick-btn" data-side="1" data-accent="#0BC6E3">
+            <span class="champion-pick-placeholder">⚔ CHOOSE YOUR CHAMPION</span>
+          </button>
         </div>
- 
+
         <div>
           <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#E0433E] mb-2" style="font-weight:600;">
             <span class="w-2 h-2 bg-[#E0433E] inline-block" style="transform:rotate(45deg);"></span> RED SIDE
           </label>
-          <input id="p2-name" type="text" maxlength="18" placeholder="Player name" required
-            class="w-full bg-[#1E2328] border border-[#3C4048] focus:border-[#E0433E] rounded-sm px-4 py-3 text-[#F0E6D2] placeholder:text-[#5B5A56] outline-none transition-colors font-body" />
+          <button type="button" id="p2-champion-btn" class="champion-pick-btn" data-side="2" data-accent="#E0433E">
+            <span class="champion-pick-placeholder">⚔ CHOOSE YOUR CHAMPION</span>
+          </button>
         </div>
- 
+
         <div>
           <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#C8AA6E] mb-3" style="font-weight:600;">
             <span class="w-2 h-2 bg-[#C8AA6E] inline-block" style="transform:rotate(45deg);"></span> FIRST TO
@@ -81,129 +83,96 @@
             <input type="number" id="custom-points-input" min="1" max="99" placeholder="Custom points" class="custom-input hidden font-display" style="font-weight:600;" />
           </div>
           <input type="hidden" id="win-points" value="8" />
+          <p class="base-game-hint font-body">In the base 8-point game, scoring caps at 7 — the winning point only comes from <span style="color:#C8AA6E;">HOLD</span> or <span style="color:#C8AA6E;">2 BATTLEFIELDS</span>.</p>
         </div>
- 
-        <div>
-          <label class="flex items-center gap-2 text-xs font-display tracking-[0.25em] text-[#C8AA6E] mb-3" style="font-weight:600;">
-            <span class="w-2 h-2 bg-[#C8AA6E] inline-block" style="transform:rotate(45deg);"></span> GAME LENGTH
-          </label>
-          <div class="grid grid-cols-4 gap-2" id="length-presets">
-            <button type="button" data-val="15" class="preset-btn font-display text-base py-2.5" style="font-weight:600;">15m</button>
-            <button type="button" data-val="20" class="preset-btn font-display text-base py-2.5" style="font-weight:600;">20m</button>
-            <button type="button" data-val="30" class="preset-btn font-display text-base py-2.5" style="font-weight:600;">30m</button>
-            <button type="button" data-val="45" class="preset-btn font-display text-base py-2.5" style="font-weight:600;">45m</button>
-          </div>
-          <div class="flex items-center gap-2 mt-2">
-            <button type="button" id="custom-length-toggle" class="custom-toggle-btn font-display text-xs shrink-0" style="font-weight:600;">✎ CUSTOM</button>
-            <input type="number" id="custom-length-input" min="1" max="240" placeholder="Custom minutes" class="custom-input hidden font-display" style="font-weight:600;" />
-          </div>
-          <input type="hidden" id="game-length" value="30" />
-        </div>
- 
+
         <button type="submit" class="gold-btn w-full py-3.5 font-display text-lg tracking-wide" style="font-weight:700;">
           ENTER THE RIFT
         </button>
-        <p id="form-error" class="hidden text-[#E0433E] text-xs text-center font-body">Fill in both names to begin.</p>
+        <p id="form-error" class="hidden text-[#E0433E] text-xs text-center font-body">Choose a champion for both sides to begin.</p>
       </form>
- 
+
       <button id="setup-dice-btn" class="dice-link mx-auto mt-6 flex items-center gap-2 font-display text-xs tracking-[0.2em] text-[#8B98A5] hover:text-[#C8AA6E] transition-colors" style="font-weight:600;">
         <span class="dice-icon">⚄</span> ROLL FOR FIRST PICK
       </button>
     </div>
   </main>
- 
-  <!-- ============ MATCH SCREEN ============ -->
-  <main id="match-screen" class="relative z-10 min-h-screen hidden flex-col px-4 pt-6 pb-16">
- 
-    <div class="max-w-3xl mx-auto w-full mb-5">
-      <div class="flex justify-center mb-3">
-        <div class="timer-chip">
-          <span class="timer-icon" id="timer-icon">⏱</span>
-          <span id="game-timer" class="font-display tabular-nums" style="font-weight:600;">30:00</span>
-        </div>
-      </div>
-      <div class="flex items-center justify-between flex-wrap gap-3">
-        <div class="font-display text-xs tracking-[0.3em] text-[#8B98A5]" style="font-weight:600;">FIRST TO <span id="target-label" class="text-[#C8AA6E]">8</span> PTS</div>
-        <div class="flex items-center gap-2">
-          <button id="match-dice-btn" class="action-btn" title="Roll for first pick">
-            <span class="action-icon">⚄</span><span>DICE</span>
+
+  <!-- ============ MATCH SCREEN — face-to-face arena ============ -->
+  <main id="match-screen" class="relative z-10 hidden flex-col match-screen-root">
+
+    <div class="match-arena" id="match-arena">
+
+      <!-- PLAYER 1 PANEL — rotated 180° so it faces the player standing beyond this edge of the table, not the center -->
+      <section class="player-panel player-panel-rotated" id="p1-panel" data-side="1" style="--accent:#0BC6E3;">
+        <div class="player-panel-inner">
+          <div class="side-tag text-[9px] sm:text-[11px]" style="color:var(--accent);">BLUE SIDE</div>
+          <h2 id="p1-label" class="champion-name font-display" style="font-weight:700;">Choose a champion</h2>
+          <div id="p1-score" class="score-number font-display tabular-nums">0</div>
+          <div class="score-bar-track">
+            <div id="p1-bar" class="bar-fill h-full rounded-full" style="width:0%; background: linear-gradient(90deg, var(--accent), #F0E6D2);"></div>
+          </div>
+          <div class="score-frac text-[#8B98A5] font-body"><span id="p1-frac">0 / 8</span></div>
+
+          <button data-player="1" data-delta="1" class="point-btn btn-press w-full" style="background: linear-gradient(180deg, #F0E6D2, var(--accent)); color:#010A13;">
+            <span class="font-display" style="font-weight:700;">+1 POINT</span>
           </button>
-          <button id="new-match-btn" class="action-btn action-btn-danger" title="End this match and go back to setup">
-            <span class="action-icon">↩</span><span>BACK</span>
+          <button id="p1-hold" data-player="1" class="finisher-btn btn-press" disabled>⬡ HOLD FOR THE WIN</button>
+          <button id="p1-battlefields" data-player="1" class="finisher-btn btn-press hidden" disabled>⚑ 2 BATTLEFIELDS</button>
+          <button data-player="1" data-delta="-1" class="correction-link">− undo a point</button>
+        </div>
+      </section>
+
+      <!-- CENTER STRIP — shared controls, reachable from either side -->
+      <div class="center-strip">
+        <button id="match-dice-btn" class="strip-icon-btn" title="Roll for first pick">
+          <span class="strip-icon">⚄</span>
+        </button>
+
+        <div class="strip-mid">
+          <div class="nexus-gem crest-pulse"></div>
+          <div class="timer-chip" id="timer-chip" title="Match duration">
+            <span class="timer-icon" id="timer-icon">⏱</span>
+            <span id="game-timer" class="font-display tabular-nums" style="font-weight:600;">00:00</span>
+          </div>
+          <div class="target-chip font-display" style="font-weight:600;">FIRST TO <span id="target-label" class="text-[#C8AA6E]">8</span></div>
+        </div>
+
+        <button id="match-menu-btn" class="strip-icon-btn" title="Menu">
+          <span class="strip-icon">≡</span>
+        </button>
+      </div>
+
+      <!-- PLAYER 2 PANEL — stays unrotated: default orientation already faces the player standing beyond this (south/right) edge -->
+      <section class="player-panel" id="p2-panel" data-side="2" style="--accent:#E0433E;">
+        <div class="player-panel-inner">
+          <div class="side-tag text-[9px] sm:text-[11px]" style="color:var(--accent);">RED SIDE</div>
+          <h2 id="p2-label" class="champion-name font-display" style="font-weight:700;">Choose a champion</h2>
+          <div id="p2-score" class="score-number font-display tabular-nums">0</div>
+          <div class="score-bar-track">
+            <div id="p2-bar" class="bar-fill h-full rounded-full" style="width:0%; background: linear-gradient(90deg, var(--accent), #F0E6D2);"></div>
+          </div>
+          <div class="score-frac text-[#8B98A5] font-body"><span id="p2-frac">0 / 8</span></div>
+
+          <button data-player="2" data-delta="1" class="point-btn btn-press w-full" style="background: linear-gradient(180deg, #F0E6D2, var(--accent)); color:#010A13;">
+            <span class="font-display" style="font-weight:700;">+1 POINT</span>
           </button>
+          <button id="p2-hold" data-player="2" class="finisher-btn btn-press" disabled>⬡ HOLD FOR THE WIN</button>
+          <button id="p2-battlefields" data-player="2" class="finisher-btn btn-press hidden" disabled>⚑ 2 BATTLEFIELDS</button>
+          <button data-player="2" data-delta="-1" class="correction-link">− undo a point</button>
         </div>
-      </div>
-    </div>
- 
-    <div class="flex-1 flex flex-row items-stretch gap-2 sm:gap-3 md:gap-4 max-w-3xl mx-auto w-full">
- 
-      <!-- BLUE SIDE PANEL -->
-      <section class="flex-1 min-w-0 hex-frame side-blue p-2.5 sm:p-5 md:p-6 flex flex-col items-center">
-        <div class="side-tag text-[9px] sm:text-[11px] text-[#0BC6E3]">BLUE SIDE</div>
-        <h2 id="p1-label" class="font-display text-xs sm:text-lg md:text-xl tracking-wide text-[#F0E6D2] truncate max-w-full mt-1" style="font-weight:700;">Player One</h2>
-        <div id="p1-score" class="font-display text-4xl sm:text-6xl md:text-8xl lg:text-9xl my-1 sm:my-3 md:my-4 text-[#F0E6D2] tabular-nums">0</div>
-        <div class="w-full h-1.5 sm:h-2 bg-[#1E2328] rounded-full overflow-hidden mb-1 border border-[#0BC6E3]/20">
-          <div id="p1-bar" class="bar-fill h-full rounded-full bg-gradient-to-r from-[#0BC6E3] to-[#7FE8DD]" style="width:0%;"></div>
-        </div>
-        <div class="text-[9px] sm:text-xs text-[#8B98A5] font-body mb-2 sm:mb-4 md:mb-5"><span id="p1-frac">0 / 8</span></div>
- 
-        <button data-player="1" data-delta="1" class="point-btn point-btn-blue btn-press w-full">
-          <span class="font-display text-xs sm:text-base md:text-lg" style="font-weight:700;">
-            <span class="sm:hidden">+1</span><span class="hidden sm:inline">+1 POINT</span>
-          </span>
-        </button>
-        <button id="p1-hold" data-player="1" class="hold-btn btn-press" disabled>
-          <span class="sm:hidden">⬡ HOLD</span><span class="hidden sm:inline">⬡ HOLD FOR THE WIN</span>
-        </button>
-        <button data-player="1" data-delta="-1" class="correction-link">
-          <span class="sm:hidden">− undo</span><span class="hidden sm:inline">− undo a point</span>
-        </button>
       </section>
- 
-      <!-- NEXUS DIVIDER -->
-      <div class="flex flex-col items-center justify-center gap-1.5 sm:gap-3 px-0.5 sm:px-1 shrink-0">
-        <div class="hidden sm:block flex-1 w-px bg-gradient-to-b from-transparent via-[#C8AA6E]/25 to-transparent"></div>
-        <div class="nexus-gem crest-pulse"></div>
-        <span class="font-display text-[10px] sm:text-xs tracking-[0.3em] text-[#8B98A5]" style="font-weight:700;">VS</span>
-        <div class="hidden sm:block flex-1 w-px bg-gradient-to-b from-transparent via-[#C8AA6E]/25 to-transparent"></div>
-      </div>
- 
-      <!-- RED SIDE PANEL -->
-      <section class="flex-1 min-w-0 hex-frame side-red p-2.5 sm:p-5 md:p-6 flex flex-col items-center">
-        <div class="side-tag text-[9px] sm:text-[11px] text-[#E0433E]">RED SIDE</div>
-        <h2 id="p2-label" class="font-display text-xs sm:text-lg md:text-xl tracking-wide text-[#F0E6D2] truncate max-w-full mt-1" style="font-weight:700;">Player Two</h2>
-        <div id="p2-score" class="font-display text-4xl sm:text-6xl md:text-8xl lg:text-9xl my-1 sm:my-3 md:my-4 text-[#F0E6D2] tabular-nums">0</div>
-        <div class="w-full h-1.5 sm:h-2 bg-[#1E2328] rounded-full overflow-hidden mb-1 border border-[#E0433E]/20">
-          <div id="p2-bar" class="bar-fill h-full rounded-full bg-gradient-to-r from-[#E0433E] to-[#F2897F]" style="width:0%;"></div>
-        </div>
-        <div class="text-[9px] sm:text-xs text-[#8B98A5] font-body mb-2 sm:mb-4 md:mb-5"><span id="p2-frac">0 / 8</span></div>
- 
-        <button data-player="2" data-delta="1" class="point-btn point-btn-red btn-press w-full">
-          <span class="font-display text-xs sm:text-base md:text-lg" style="font-weight:700;">
-            <span class="sm:hidden">+1</span><span class="hidden sm:inline">+1 POINT</span>
-          </span>
-        </button>
-        <button id="p2-hold" data-player="2" class="hold-btn btn-press" disabled>
-          <span class="sm:hidden">⬡ HOLD</span><span class="hidden sm:inline">⬡ HOLD FOR THE WIN</span>
-        </button>
-        <button data-player="2" data-delta="-1" class="correction-link">
-          <span class="sm:hidden">− undo</span><span class="hidden sm:inline">− undo a point</span>
-        </button>
-      </section>
-    </div>
- 
-    <div class="max-w-3xl mx-auto w-full flex flex-col items-center gap-3 mt-6">
-      <button id="end-round-btn" class="end-round-btn hidden">⚔ END ROUND · 2 LEFT</button>
-      <button id="reset-scores-btn" class="font-display text-xs tracking-[0.2em] text-[#8B98A5] hover:text-[#F0E6D2] transition-colors" style="font-weight:600;">↺ RESET SCORES · SAME PLAYERS</button>
+
     </div>
   </main>
- 
-  <!-- Modals (Winner overlay + Dice roll-off + Final Rounds) are built and injected by components.js -->
- 
-  <footer class="site-footer">
+
+  <!-- Modals (Winner, Dice roll-off, Confirm, Champion Picker, Match Menu) are built and injected by components.js -->
+
+  <footer class="site-footer" id="site-footer">
     © Unofficial League of Legends: Riftbound match tracker — not affiliated with Riot Games. Made by domnanob.
   </footer>
- 
+
+<script src="champions.js"></script>
 <script src="components.js"></script>
 <script src="script.js"></script>
 </body>

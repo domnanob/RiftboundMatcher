@@ -2,18 +2,26 @@
    Summoner's Tally — app logic
    ========================================================== */
 
+// The base/default Riftbound game: normal scoring caps at 7, the
+// decisive final point only comes from HOLD or controlling two
+// battlefields. Any other "first to N" target is treated as a plain
+// race-to-N with no cap (kept for house-rule flexibility).
+const BASE_GAME_TARGET = 8;
+const BASE_GAME_CAP = 7;
+
 // ---------- state ----------
 const state = {
-  p1Name: '',
-  p2Name: '',
+  p1Champion: null, // { id, name, title, display, accent, art }
+  p2Champion: null,
   winPoints: 8,
-  gameLength: 30, // minutes
   score1: 0,
   score2: 0,
   gameOver: false,
-  finalRoundsActive: false,
-  finalRoundsRemaining: 2,
 };
+
+function isBaseGame() {
+  return state.winPoints === BASE_GAME_TARGET;
+}
 
 // ---------- ambient embers ----------
 function spawnEmbers() {
@@ -54,9 +62,8 @@ function setupPresetGroup(groupId, hiddenFieldId, defaultIndex) {
 }
 
 const pointsGroup = setupPresetGroup('win-presets', 'win-points', 1);   // default: 8
-const lengthGroup = setupPresetGroup('length-presets', 'game-length', 2); // default: 30m
 
-// ---------- custom toggle helper (points / game length) ----------
+// ---------- custom toggle helper (points target) ----------
 function setupCustomToggle(toggleId, inputId, hiddenFieldId, presetGroup) {
   const toggle = document.getElementById(toggleId);
   const input = document.getElementById(inputId);
@@ -86,27 +93,65 @@ function setupCustomToggle(toggleId, inputId, hiddenFieldId, presetGroup) {
 }
 
 const customPoints = setupCustomToggle('custom-points-toggle', 'custom-points-input', 'win-points', pointsGroup);
-const customLength = setupCustomToggle('custom-length-toggle', 'custom-length-input', 'game-length', lengthGroup);
+
+// ---------- champion picking (setup screen) ----------
+const championPickerModal = createChampionPickerModal();
+
+function championArtLayer(champion) {
+  // Multiple background layers: real art (if a matching file exists in
+  // assets/champions/) painted over a themed crest gradient fallback.
+  // A missing/broken image layer simply renders transparent, so the
+  // gradient underneath always shows through cleanly.
+  return `linear-gradient(180deg, rgba(1,10,19,0.25), rgba(1,10,19,0.92)), url('${champion.art}'), ` +
+    `linear-gradient(160deg, ${champion.accent} 0%, #0A1428 75%)`;
+}
+
+function renderChampionButton(side) {
+  const btn = document.getElementById(`p${side}-champion-btn`);
+  const champion = state[`p${side}Champion`];
+  if (!champion) {
+    btn.innerHTML = `<span class="champion-pick-placeholder">⚔ CHOOSE YOUR CHAMPION</span>`;
+    btn.classList.remove('champion-pick-filled');
+    return;
+  }
+  btn.classList.add('champion-pick-filled');
+  btn.style.backgroundImage = championArtLayer(champion);
+  btn.innerHTML = `
+    <span class="champion-pick-info">
+      <span class="champion-pick-name">${champion.name}</span>
+      <span class="champion-pick-title">${champion.title}</span>
+    </span>
+    <span class="champion-pick-change">CHANGE ✎</span>
+  `;
+}
+
+function pickChampion(side) {
+  const other = side === 1 ? state.p2Champion : state.p1Champion;
+  championPickerModal.show({
+    excludeId: other ? other.id : null,
+    onPick: (champion) => {
+      state[`p${side}Champion`] = champion;
+      renderChampionButton(side);
+    },
+  });
+}
+
+document.getElementById('p1-champion-btn').addEventListener('click', () => pickChampion(1));
+document.getElementById('p2-champion-btn').addEventListener('click', () => pickChampion(2));
 
 // ---------- setup form submit ----------
 document.getElementById('setup-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  const p1 = document.getElementById('p1-name').value.trim();
-  const p2 = document.getElementById('p2-name').value.trim();
   const win = parseInt(document.getElementById('win-points').value, 10);
-  const length = parseInt(document.getElementById('game-length').value, 10);
   const errorEl = document.getElementById('form-error');
 
-  if (!p1 || !p2 || !win || win < 1 || !length || length < 1) {
+  if (!state.p1Champion || !state.p2Champion || !win || win < 1) {
     errorEl.classList.remove('hidden');
     return;
   }
   errorEl.classList.add('hidden');
 
-  state.p1Name = p1;
-  state.p2Name = p2;
   state.winPoints = win;
-  state.gameLength = length;
   state.score1 = 0;
   state.score2 = 0;
 
@@ -116,125 +161,113 @@ document.getElementById('setup-form').addEventListener('submit', (e) => {
 // ---------- screens ----------
 const setupScreen = document.getElementById('setup-screen');
 const matchScreen = document.getElementById('match-screen');
+const siteFooter = document.getElementById('site-footer');
+
+function applyChampionToPanel(side) {
+  const champion = state[`p${side}Champion`];
+  const panel = document.getElementById(`p${side}-panel`);
+  const label = document.getElementById(`p${side}-label`);
+  if (!champion) return;
+  panel.style.setProperty('--accent', champion.accent);
+  panel.style.backgroundImage = championArtLayer(champion);
+  label.textContent = champion.name;
+}
+
+// show/hide the "2 BATTLEFIELDS" finisher button — only relevant to the
+// base 8-point game, where it's a second valid way (besides HOLD) to
+// claim the decisive final point
+function applyGameModeUI() {
+  const baseGame = isBaseGame();
+  document.getElementById('p1-battlefields').classList.toggle('hidden', !baseGame);
+  document.getElementById('p2-battlefields').classList.toggle('hidden', !baseGame);
+}
 
 function launchMatch() {
-  document.getElementById('p1-label').textContent = state.p1Name;
-  document.getElementById('p2-label').textContent = state.p2Name;
+  applyChampionToPanel(1);
+  applyChampionToPanel(2);
   document.getElementById('target-label').textContent = state.winPoints;
+  applyGameModeUI();
   reviveControls();
   renderScores();
   setupScreen.classList.add('hidden');
   matchScreen.classList.remove('hidden');
   matchScreen.classList.add('flex');
-  startTimer(state.gameLength);
+  siteFooter.classList.add('hidden');
+  startStopwatch();
 }
 
 function goToSetup(prefill) {
-  stopTimer();
+  stopStopwatch();
   matchScreen.classList.add('hidden');
   matchScreen.classList.remove('flex');
   setupScreen.classList.remove('hidden');
+  siteFooter.classList.remove('hidden');
   if (!prefill) {
     document.getElementById('setup-form').reset();
     pointsGroup.reset();
-    lengthGroup.reset();
     customPoints.reset();
-    customLength.reset();
+    state.p1Champion = null;
+    state.p2Champion = null;
+    renderChampionButton(1);
+    renderChampionButton(2);
   }
 }
 const confirmModal = createConfirmModal();
 
-document.getElementById('new-match-btn').addEventListener('click', () => {
-  confirmModal.show({
-    title: 'End this match?',
-    message: 'Going back to setup will discard the current scores and timer for this game.',
-    confirmText: 'YES, END MATCH',
-    onConfirm: () => goToSetup(false),
-  });
+const matchMenuModal = createMatchMenuModal({
+  onReset: () => {
+    if (state.gameOver) return;
+    state.score1 = 0;
+    state.score2 = 0;
+    renderScores();
+  },
+  onBack: () => {
+    confirmModal.show({
+      title: 'End this match?',
+      message: 'Going back to setup will discard the current scores and timer for this game.',
+      confirmText: 'YES, END MATCH',
+      onConfirm: () => goToSetup(false),
+    });
+  },
 });
 
-// ---------- match timer + final rounds (sudden death) ----------
-let timerInterval = null;
-let timerEndTs = null;
-const timerChip = document.querySelector('.timer-chip');
-const timerIcon = document.getElementById('timer-icon');
+document.getElementById('match-menu-btn').addEventListener('click', () => {
+  matchMenuModal.show();
+});
+
+// ---------- match stopwatch ----------
+// No fixed game length — the clock just counts up so you can see how
+// long the match ran, shown live in the center strip and again on the
+// winner screen once the match ends.
+let stopwatchInterval = null;
+let stopwatchStartTs = null;
+let lastMatchDuration = '';
 const timerEl = document.getElementById('game-timer');
-const endRoundBtn = document.getElementById('end-round-btn');
 
-const finalRoundsModal = createFinalRoundsModal({ onBegin: activateFinalRounds });
-
-function startTimer(minutes) {
-  stopTimer();
-  state.finalRoundsActive = false;
-  state.finalRoundsRemaining = 2;
-  timerChip.classList.remove('timer-warning', 'timer-up');
-  timerIcon.textContent = '⏱';
-  endRoundBtn.classList.add('hidden');
-  timerEndTs = Date.now() + minutes * 60000;
-  updateTimer();
-  timerInterval = setInterval(updateTimer, 1000);
+function formatDuration(ms) {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const mm = String(m).padStart(2, '0');
+  const ss = String(s).padStart(2, '0');
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
-function stopTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = null;
+function startStopwatch() {
+  stopStopwatch();
+  stopwatchStartTs = Date.now();
+  updateStopwatch();
+  stopwatchInterval = setInterval(updateStopwatch, 1000);
 }
 
-function updateTimer() {
-  const remaining = timerEndTs - Date.now();
-  if (remaining <= 0) {
-    timerEl.textContent = '00:00';
-    timerChip.classList.add('timer-up');
-    stopTimer();
-    if (!state.finalRoundsActive && !state.gameOver) {
-      finalRoundsModal.show();
-    }
-    return;
-  }
-  const totalSec = Math.ceil(remaining / 1000);
-  const m = String(Math.floor(totalSec / 60)).padStart(2, '0');
-  const s = String(totalSec % 60).padStart(2, '0');
-  timerEl.textContent = `${m}:${s}`;
-  timerChip.classList.toggle('timer-warning', remaining <= 60000);
+function stopStopwatch() {
+  if (stopwatchInterval) clearInterval(stopwatchInterval);
+  stopwatchInterval = null;
 }
 
-function activateFinalRounds() {
-  state.finalRoundsActive = true;
-  state.finalRoundsRemaining = 2;
-  timerIcon.textContent = '⚔';
-  timerChip.classList.add('timer-up');
-  timerChip.classList.remove('timer-warning');
-  endRoundBtn.classList.remove('hidden');
-  updateRoundsChip();
-}
-
-function updateRoundsChip() {
-  timerEl.textContent = `${state.finalRoundsRemaining} LEFT`;
-  endRoundBtn.textContent = `⚔ END ROUND · ${state.finalRoundsRemaining} LEFT`;
-}
-
-endRoundBtn.addEventListener('click', () => {
-  if (!state.finalRoundsActive || state.gameOver) return;
-  state.finalRoundsRemaining--;
-  if (state.finalRoundsRemaining <= 0) {
-    resolveFinalRounds();
-  } else {
-    updateRoundsChip();
-  }
-});
-
-function resolveFinalRounds() {
-  state.finalRoundsActive = false;
-  endRoundBtn.classList.add('hidden');
-  if (state.score1 === state.score2) {
-    endGame();
-    winnerModal.showDraw(state.score1);
-  } else {
-    const name = state.score1 > state.score2 ? state.p1Name : state.p2Name;
-    const points = Math.max(state.score1, state.score2);
-    endGame();
-    winnerModal.showWin(name, points, 'points');
-  }
+function updateStopwatch() {
+  timerEl.textContent = formatDuration(Date.now() - stopwatchStartTs);
 }
 
 // ---------- scoring ----------
@@ -249,36 +282,64 @@ function renderScores() {
   document.getElementById('p1-frac').textContent = `${state.score1} / ${state.winPoints}`;
   document.getElementById('p2-frac').textContent = `${state.score2} / ${state.winPoints}`;
 
-  updateHoldButtons();
+  updateFinisherButtons();
 }
 
-function updateHoldButtons() {
-  const holdBtn1 = document.getElementById('p1-hold');
-  const holdBtn2 = document.getElementById('p2-hold');
-  const eligible1 = state.score1 >= state.winPoints;
-  const eligible2 = state.score2 >= state.winPoints;
+// the threshold at which HOLD (and, in the base game, 2 BATTLEFIELDS)
+// becomes available: in the base 8-point game that's 7 (scoring itself
+// is capped at 7, so the decisive point can only come from a finisher
+// action); for any other target it's simply the target itself
+function finisherThreshold() {
+  return isBaseGame() ? BASE_GAME_CAP : state.winPoints;
+}
 
-  holdBtn1.disabled = !eligible1 || state.gameOver;
-  holdBtn2.disabled = !eligible2 || state.gameOver;
-  holdBtn1.classList.toggle('hold-ready', eligible1 && !state.gameOver);
-  holdBtn2.classList.toggle('hold-ready', eligible2 && !state.gameOver);
+function updateFinisherButtons() {
+  const threshold = finisherThreshold();
+  const eligible1 = state.score1 >= threshold;
+  const eligible2 = state.score2 >= threshold;
+
+  ['1', '2'].forEach(p => {
+    const eligible = p === '1' ? eligible1 : eligible2;
+    const holdBtn = document.getElementById(`p${p}-hold`);
+    holdBtn.disabled = !eligible || state.gameOver;
+    holdBtn.classList.toggle('hold-ready', eligible && !state.gameOver);
+
+    const bfBtn = document.getElementById(`p${p}-battlefields`);
+    bfBtn.disabled = !eligible || state.gameOver;
+    bfBtn.classList.toggle('hold-ready', eligible && !state.gameOver);
+  });
+}
+
+function bumpScore(player) {
+  if (state.gameOver) return;
+  const key = player === '1' ? 'score1' : 'score2';
+  const scoreEl = document.getElementById(`p${player}-score`);
+
+  // base game: normal scoring is capped at 7 — the decisive point only
+  // comes from HOLD or 2 BATTLEFIELDS
+  if (isBaseGame() && state[key] >= BASE_GAME_CAP) {
+    scoreEl.classList.remove('score-shake');
+    void scoreEl.offsetWidth;
+    scoreEl.classList.add('score-shake');
+    return;
+  }
+
+  state[key] += 1;
+  renderScores();
+
+  scoreEl.classList.remove('score-bump');
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('score-bump');
 }
 
 document.querySelectorAll('.point-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (state.gameOver) return;
-    const player = btn.dataset.player;
-    const key = player === '1' ? 'score1' : 'score2';
-    const scoreEl = document.getElementById(`p${player}-score`);
-
-    state[key] += 1;
-    renderScores();
-
-    scoreEl.classList.remove('score-bump');
-    void scoreEl.offsetWidth;
-    scoreEl.classList.add('score-bump');
-  });
+  btn.addEventListener('click', () => bumpScore(btn.dataset.player));
 });
+
+// tapping the big score number itself is an equally valid — and even
+// bigger — touch target for adding a point mid-game
+document.getElementById('p1-score').addEventListener('click', () => bumpScore('1'));
+document.getElementById('p2-score').addEventListener('click', () => bumpScore('2'));
 
 document.querySelectorAll('.correction-link').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -298,32 +359,26 @@ document.querySelectorAll('.correction-link').forEach(btn => {
   });
 });
 
-document.querySelectorAll('.hold-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (state.gameOver || btn.disabled) return;
-    const player = btn.dataset.player;
-    const key = player === '1' ? 'score1' : 'score2';
-    if (state[key] < state.winPoints) return;
-    const name = player === '1' ? state.p1Name : state.p2Name;
-    endGame();
-    winnerModal.showWin(name, state[key], 'hold');
-  });
-});
-
-document.getElementById('reset-scores-btn').addEventListener('click', () => {
+function claimWin(player, reason) {
   if (state.gameOver) return;
-  state.score1 = 0;
-  state.score2 = 0;
-  renderScores();
-});
+  const key = player === '1' ? 'score1' : 'score2';
+  if (state[key] < finisherThreshold()) return;
+  const champion = player === '1' ? state.p1Champion : state.p2Champion;
+  endGame();
+  winnerModal.showWin(champion.name, state[key], reason, lastMatchDuration);
+}
+
+document.getElementById('p1-hold').addEventListener('click', () => claimWin('1', 'hold'));
+document.getElementById('p2-hold').addEventListener('click', () => claimWin('2', 'hold'));
+document.getElementById('p1-battlefields').addEventListener('click', () => claimWin('1', 'battlefields'));
+document.getElementById('p2-battlefields').addEventListener('click', () => claimWin('2', 'battlefields'));
 
 // ---------- game-over control lock ----------
 function endGame() {
   state.gameOver = true;
-  stopTimer();
-  state.finalRoundsActive = false;
-  endRoundBtn.classList.add('hidden');
-  document.querySelectorAll('.point-btn, .correction-link, .hold-btn').forEach(el => {
+  lastMatchDuration = stopwatchStartTs ? formatDuration(Date.now() - stopwatchStartTs) : '';
+  stopStopwatch();
+  document.querySelectorAll('.point-btn, .correction-link, .finisher-btn').forEach(el => {
     el.disabled = true;
     el.classList.add('opacity-40', 'pointer-events-none');
   });
@@ -331,11 +386,11 @@ function endGame() {
 
 function reviveControls() {
   state.gameOver = false;
-  document.querySelectorAll('.point-btn, .correction-link, .hold-btn').forEach(el => {
+  document.querySelectorAll('.point-btn, .correction-link, .finisher-btn').forEach(el => {
     el.disabled = false;
     el.classList.remove('opacity-40', 'pointer-events-none');
   });
-  updateHoldButtons();
+  updateFinisherButtons();
 }
 
 // ---------- modal components ----------
@@ -345,7 +400,7 @@ const winnerModal = createWinnerModal({
     state.score2 = 0;
     reviveControls();
     renderScores();
-    startTimer(state.gameLength);
+    startStopwatch();
   },
   onNewMatch: () => goToSetup(false),
 });
@@ -353,8 +408,11 @@ const winnerModal = createWinnerModal({
 const diceModal = createDiceModal();
 
 document.getElementById('setup-dice-btn').addEventListener('click', () => {
-  diceModal.show(document.getElementById('p1-name').value.trim(), document.getElementById('p2-name').value.trim());
+  diceModal.show(
+    state.p1Champion ? state.p1Champion.name : '',
+    state.p2Champion ? state.p2Champion.name : ''
+  );
 });
 document.getElementById('match-dice-btn').addEventListener('click', () => {
-  diceModal.show(state.p1Name, state.p2Name);
+  diceModal.show(state.p1Champion.name, state.p2Champion.name);
 });

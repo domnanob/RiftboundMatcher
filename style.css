@@ -90,9 +90,6 @@ button:focus-visible, input:focus-visible {
   opacity: 0.7;
 }
 
-.side-blue { box-shadow: 0 0 50px -22px rgba(11,198,227,0.55), 0 0 0 1px rgba(200,170,110,0.08) inset; }
-.side-red  { box-shadow: 0 0 50px -22px rgba(224,67,62,0.55), 0 0 0 1px rgba(200,170,110,0.08) inset; }
-
 .side-tag {
   font-family: 'Cinzel', serif;
   font-weight: 600;
@@ -167,6 +164,13 @@ button:focus-visible, input:focus-visible {
 .custom-input:focus { border-color: #C8AA6E; }
 .custom-input::placeholder { color: #5B5A56; }
 
+.base-game-hint {
+  margin-top: 8px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #8B98A5;
+}
+
 .timer-chip {
   display: flex;
   align-items: center;
@@ -181,20 +185,6 @@ button:focus-visible, input:focus-visible {
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 .timer-icon { font-size: 14px; }
-.timer-chip.timer-warning {
-  border-color: #E0433E;
-  color: #E0433E;
-  animation: timerPulse 1s ease-in-out infinite;
-}
-.timer-chip.timer-up {
-  border-color: #E0433E;
-  color: #E0433E;
-  animation: timerPulse 0.6s ease-in-out infinite;
-}
-@keyframes timerPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
 
 .action-btn {
   display: flex;
@@ -248,63 +238,42 @@ button:focus-visible, input:focus-visible {
 
 .point-btn {
   border-radius: 2px;
-  padding: 16px 0;
+  padding: clamp(10px, 3vw, 16px) 0;
+  margin-top: 6px;
   transition: transform 0.12s ease, filter 0.12s ease;
   box-shadow: 0 8px 26px -10px rgba(0,0,0,0.6);
 }
-.point-btn-blue {
-  color: #010A13;
-  background: linear-gradient(180deg, #7FE8DD, #0BC6E3);
-}
-.point-btn-red {
-  color: #010A13;
-  background: linear-gradient(180deg, #F2897F, #E0433E);
-}
+.point-btn span { font-size: clamp(13px, 3.6vw, 19px); }
 .point-btn:hover { filter: brightness(1.08); }
 .btn-press:active { transform: scale(0.96); }
 
-.hold-btn {
-  margin-top: 10px;
+.finisher-btn {
+  margin-top: 8px;
   width: 100%;
-  padding: 11px 0;
+  padding: clamp(7px, 2vw, 11px) 4px;
   border-radius: 2px;
   border: 1px solid rgba(200,170,110,0.35);
   background: transparent;
   color: #6B6455;
   font-family: 'Cinzel', serif;
   font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.1em;
+  font-size: clamp(10px, 2.6vw, 13px);
+  letter-spacing: 0.08em;
   transition: all 0.2s ease;
 }
-.hold-btn:disabled { cursor: not-allowed; }
-.hold-btn.hold-ready {
+.finisher-btn:disabled { cursor: not-allowed; }
+.finisher-btn.hold-ready {
   color: #C8AA6E;
   border-color: #C8AA6E;
   background: rgba(200,170,110,0.12);
   cursor: pointer;
   animation: holdPulse 1.4s ease-in-out infinite;
 }
-.hold-btn.hold-ready:hover { background: rgba(200,170,110,0.22); }
+.finisher-btn.hold-ready:hover { background: rgba(200,170,110,0.22); }
 @keyframes holdPulse {
   0%, 100% { box-shadow: 0 0 8px rgba(200,170,110,0.25); }
   50% { box-shadow: 0 0 20px rgba(200,170,110,0.65); }
 }
-
-.end-round-btn {
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.15em;
-  color: #E0433E;
-  border: 1px solid rgba(224,67,62,0.5);
-  padding: 10px 22px;
-  border-radius: 2px;
-  background: rgba(224,67,62,0.08);
-  transition: all 0.15s ease;
-  animation: timerPulse 1.6s ease-in-out infinite;
-}
-.end-round-btn:hover { background: rgba(224,67,62,0.2); }
 
 .correction-link {
   margin-top: 10px;
@@ -320,8 +289,7 @@ button:focus-visible, input:focus-visible {
 .dice-icon { font-size: 16px; }
 
 /* ---------------------------------------------------------
-   Mobile refinements — keep both score panels visible
-   side-by-side on narrow phones, in portrait or landscape
+   Small-screen refinements for the setup form / modals
 --------------------------------------------------------- */
 @media (max-width: 639px) {
   .hex-frame {
@@ -330,19 +298,175 @@ button:focus-visible, input:focus-visible {
       0 100%, 0 10px
     );
   }
-  .point-btn { padding: 9px 0; }
-  .hold-btn {
-    margin-top: 6px;
-    padding: 7px 0;
-    font-size: 10px;
-    letter-spacing: 0.05em;
-  }
   .correction-link {
     margin-top: 6px;
     font-size: 10px;
   }
-  .side-tag { letter-spacing: 0.12em; }
-  .nexus-gem { width: 14px; height: 14px; border-radius: 2px; }
+}
+
+/* ---------------------------------------------------------
+   FACE-TO-FACE MATCH ARENA
+   Two players sit across the table from each other with the
+   phone lying flat between them. The screen splits into two
+   equal panels (stacked in portrait, side-by-side in landscape)
+   — one of them rotated 180° so its owner always reads their
+   own score right-side up, whichever side of the table they're
+   sitting on. A slim shared strip between the panels holds the
+   timer, dice roll-off and match menu.
+--------------------------------------------------------- */
+.match-screen-root {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100dvh;
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+}
+.match-screen-root.flex { display: flex; }
+
+.match-arena {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+@media (orientation: landscape) {
+  .match-arena { flex-direction: row; }
+}
+
+.player-panel {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-color: #0A1428;
+  box-shadow: inset 0 0 0 1px rgba(200,170,110,0.14);
+}
+.player-panel-rotated { transform: rotate(180deg); }
+
+.player-panel-inner {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(8px, 3vh, 20px) clamp(14px, 5vw, 28px);
+}
+
+.champion-name {
+  font-size: clamp(16px, 5.5vw, 32px);
+  font-weight: 700;
+  color: #F0E6D2;
+  margin-top: 2px;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.75), 0 0 2px rgba(0,0,0,0.9);
+}
+
+.score-number {
+  font-size: clamp(52px, 19vw, 150px);
+  line-height: 1;
+  margin: clamp(2px, 1.5vh, 12px) 0 clamp(4px, 1.5vh, 14px);
+  color: #F0E6D2;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  text-shadow: 0 4px 28px rgba(0,0,0,0.7), 0 0 3px rgba(0,0,0,0.9);
+}
+
+.score-bar-track {
+  width: 100%;
+  max-width: 320px;
+  height: 7px;
+  background: rgba(30,35,40,0.85);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.score-frac {
+  font-size: clamp(10px, 2.6vw, 14px);
+  margin-bottom: clamp(6px, 2.5vh, 18px);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+}
+
+/* shared strip between the two panels */
+.center-strip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px clamp(8px, 2vw, 16px);
+  background: #05090F;
+  border-top: 1px solid rgba(200,170,110,0.2);
+  border-bottom: 1px solid rgba(200,170,110,0.2);
+  position: relative;
+  z-index: 5;
+}
+@media (orientation: landscape) {
+  .center-strip {
+    flex-direction: column;
+    width: clamp(60px, 13vw, 104px);
+    border-top: none;
+    border-bottom: none;
+    border-left: 1px solid rgba(200,170,110,0.2);
+    border-right: 1px solid rgba(200,170,110,0.2);
+    padding: clamp(8px, 2vh, 16px) 6px;
+  }
+  .target-chip { text-align: center; }
+}
+
+.strip-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.strip-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(200,170,110,0.35);
+  background: rgba(200,170,110,0.08);
+  color: #C8AA6E;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.strip-icon-btn:hover { background: rgba(200,170,110,0.18); }
+.strip-icon-btn:active { transform: scale(0.92); }
+.strip-icon { font-size: 16px; line-height: 1; }
+
+.target-chip {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: #8B98A5;
+  white-space: nowrap;
+}
+
+#timer-chip { padding: 5px 12px; font-size: 13px; }
+
+@media (max-height: 620px) {
+  .champion-name { margin-top: 0; }
+  .player-panel-inner { padding-top: 4px; padding-bottom: 4px; }
+  .nexus-gem { width: 16px; height: 16px; border-radius: 2px; }
+  .target-chip { display: none; }
 }
 
 /* ---------------------------------------------------------
@@ -479,3 +603,153 @@ button:focus-visible, input:focus-visible {
 
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ---------------------------------------------------------
+   Champion picker — setup-screen trigger button
+--------------------------------------------------------- */
+.champion-pick-btn {
+  width: 100%;
+  min-height: 88px;
+  border-radius: 3px;
+  border: 1px dashed rgba(200,170,110,0.4);
+  background-color: #1E2328;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  color: #F0E6D2;
+  text-align: left;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.champion-pick-btn:hover { border-color: rgba(200,170,110,0.7); }
+.champion-pick-btn:active { transform: scale(0.98); }
+.champion-pick-btn.champion-pick-filled { border-style: solid; border-color: rgba(200,170,110,0.55); }
+
+.champion-pick-placeholder {
+  margin: auto;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  color: #8B98A5;
+}
+
+.champion-pick-info { display: flex; flex-direction: column; min-width: 0; }
+.champion-pick-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 17px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.champion-pick-title {
+  font-size: 11px;
+  color: #C8AA6E;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+.champion-pick-change {
+  flex-shrink: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: #F0E6D2;
+  background: rgba(1,10,19,0.6);
+  border: 1px solid rgba(200,170,110,0.3);
+  padding: 5px 8px;
+  border-radius: 2px;
+}
+
+/* ---------------------------------------------------------
+   Champion picker modal
+--------------------------------------------------------- */
+.champion-modal-body {
+  display: flex;
+  flex-direction: column;
+  max-height: 82vh;
+  max-height: 82dvh;
+}
+.champion-search {
+  width: 100%;
+  flex-shrink: 0;
+  background: #1E2328;
+  border: 1px solid #3C4048;
+  border-radius: 2px;
+  padding: 10px 12px;
+  color: #F0E6D2;
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.15s ease;
+}
+.champion-search:focus { border-color: #C8AA6E; }
+.champion-search::placeholder { color: #5B5A56; }
+
+.champion-grid {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding-right: 2px;
+  padding-bottom: 4px;
+}
+@media (min-width: 480px) {
+  .champion-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.champion-tile {
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+  border: 1px solid rgba(200,170,110,0.25);
+  background-size: cover;
+  background-position: center;
+  background-color: #1E2328;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 8px;
+  text-align: left;
+  position: relative;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+.champion-tile:hover { border-color: rgba(200,170,110,0.65); }
+.champion-tile:active { transform: scale(0.95); }
+.champion-tile-name {
+  display: block;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #F0E6D2;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.85);
+}
+.champion-tile-title {
+  display: block;
+  font-size: 9px;
+  color: #C8AA6E;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.85);
+}
+.champion-tile-taken { opacity: 0.5; }
+.champion-tile-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-family: 'Cinzel', serif;
+  font-size: 7.5px;
+  letter-spacing: 0.06em;
+  background: rgba(1,10,19,0.75);
+  color: #8B98A5;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+.champion-grid-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #8B98A5;
+  font-size: 13px;
+  padding: 28px 8px;
+}

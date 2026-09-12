@@ -28,10 +28,11 @@ class Modal {
 
 /* ------------------------------------------------------------
    Winner Modal component
-   showWin(name, points, reason) — reason is 'hold' (a player
-   held at/above target) or 'points' (final rounds ran out and
-   this player had the most points).
-   showDraw(points) — final rounds ran out level.
+   showWin(name, points, reason, duration) — reason is 'hold' (a
+   player held at/above target) or 'battlefields' (claimed the
+   winning point by controlling two battlefields, base 8-point
+   game only). duration is the formatted match length (mm:ss),
+   shown as a small footnote.
 ------------------------------------------------------------ */
 function createWinnerModal({ onRematch, onNewMatch } = {}) {
   const modal = new Modal('winner-overlay', `
@@ -39,7 +40,8 @@ function createWinnerModal({ onRematch, onNewMatch } = {}) {
     <div class="relative pop-in hex-frame bg-[#0A1428] px-8 py-10 max-w-sm w-full text-center">
       <p data-role="title" class="font-display text-[11px] tracking-[0.4em] text-[#C8AA6E] mb-3" style="font-weight:700;">VICTORY</p>
       <h2 data-role="name" class="font-display text-4xl text-[#F0E6D2] mb-2 break-words" style="font-weight:700;">Player</h2>
-      <p data-role="message" class="text-[#8B98A5] text-sm mb-8 font-body">reached 8 points first.</p>
+      <p data-role="message" class="text-[#8B98A5] text-sm mb-2 font-body">reached 8 points first.</p>
+      <p data-role="duration" class="text-[#5B5A56] text-[11px] mb-6 font-body"></p>
       <div class="flex flex-col gap-3">
         <button data-role="rematch" class="gold-btn py-3 font-display text-base" style="font-weight:700;">↺ REMATCH</button>
         <button data-role="new-match" class="ghost-btn py-3 font-display text-base" style="font-weight:600;">NEW MATCH</button>
@@ -77,21 +79,14 @@ function createWinnerModal({ onRematch, onNewMatch } = {}) {
   });
 
   return {
-    showWin(name, points, reason) {
+    showWin(name, points, reason, duration) {
       modal.q('[data-role="title"]').textContent = 'VICTORY';
       modal.q('[data-role="title"]').style.color = '#C8AA6E';
       modal.q('[data-role="name"]').textContent = name;
-      modal.q('[data-role="message"]').textContent = reason === 'hold'
-        ? `held at ${points} points to claim the win.`
-        : `finishes the final rounds with the most points (${points}).`;
-      spawnShards();
-      modal.open();
-    },
-    showDraw(points) {
-      modal.q('[data-role="title"]').textContent = 'DRAW';
-      modal.q('[data-role="title"]').style.color = '#E0433E';
-      modal.q('[data-role="name"]').textContent = 'Stalemate';
-      modal.q('[data-role="message"]').textContent = `Both sides finish the final rounds tied at ${points} points.`;
+      modal.q('[data-role="message"]').textContent = reason === 'battlefields'
+        ? `seized two battlefields to claim the win at ${points} points.`
+        : `held at ${points} points to claim the win.`;
+      modal.q('[data-role="duration"]').textContent = duration ? `Match length: ${duration}` : '';
       spawnShards();
       modal.open();
     },
@@ -139,30 +134,101 @@ function createConfirmModal() {
   };
 }
 /* ------------------------------------------------------------
-   Final Rounds Modal component
-   Shown once the game timer hits zero. Informs both players
-   they get two more rounds to score or hold; otherwise the
-   higher point total wins, and equal totals are a draw.
+   Champion Picker Modal component
+   show({ excludeId, onPick }) opens a searchable grid of every
+   champion in CHAMPIONS (see champions.js). Tapping a tile calls
+   onPick(champion) and closes the modal.
 ------------------------------------------------------------ */
-function createFinalRoundsModal({ onBegin } = {}) {
-  const modal = new Modal('final-rounds-overlay', `
-    <div class="relative pop-in hex-frame bg-[#0A1428] px-8 py-10 max-w-sm w-full text-center">
-      <p class="font-display text-[11px] tracking-[0.4em] text-[#E0433E] mb-3" style="font-weight:700;">TIME'S UP</p>
-      <h2 class="font-display text-3xl text-[#F0E6D2] mb-4" style="font-weight:700;">Final 2 Rounds</h2>
-      <p class="text-[#8B98A5] text-sm mb-8 font-body leading-relaxed">
-        Both sides get <span class="text-[#F0E6D2] font-semibold">two more rounds</span> to score or hold for the win.
-        If no one holds by the end, whoever has the most points wins — equal points is a draw.
-      </p>
-      <button data-role="begin" class="gold-btn w-full py-3 font-display text-base" style="font-weight:700;">BEGIN FINAL ROUNDS</button>
+function createChampionPickerModal() {
+  const modal = new Modal('champion-picker-overlay', `
+    <div class="relative pop-in hex-frame bg-[#0A1428] px-5 pt-6 pb-5 max-w-lg w-full champion-modal-body">
+      <p class="font-display text-[11px] tracking-[0.4em] text-[#C8AA6E] mb-1" style="font-weight:700;">CHOOSE YOUR</p>
+      <h2 class="font-display text-2xl text-[#F0E6D2] mb-4" style="font-weight:700;">Champion</h2>
+      <input type="text" data-role="search" placeholder="Search champion..." class="champion-search font-body" />
+      <div data-role="grid" class="champion-grid"></div>
+      <button data-role="close" class="ghost-btn w-full py-3 mt-4 font-display text-base" style="font-weight:600;">CLOSE</button>
     </div>
   `);
 
-  modal.q('[data-role="begin"]').addEventListener('click', () => {
-    modal.close();
-    onBegin && onBegin();
-  });
+  const searchInput = modal.q('[data-role="search"]');
+  const gridEl = modal.q('[data-role="grid"]');
+  let onPickCb = null;
+  let excludeId = null;
 
-  return { show: () => modal.open() };
+  function renderGrid(filter) {
+    const q = (filter || '').trim().toLowerCase();
+    gridEl.innerHTML = '';
+    CHAMPIONS
+      .filter(c => !q || c.name.toLowerCase().includes(q) || c.title.toLowerCase().includes(q))
+      .forEach(c => {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'champion-tile' + (c.id === excludeId ? ' champion-tile-taken' : '');
+        tile.style.backgroundImage =
+          `linear-gradient(180deg, rgba(1,10,19,0.15), rgba(1,10,19,0.88)), url('${c.art}'), ` +
+          `linear-gradient(160deg, ${c.accent} 0%, #0A1428 75%)`;
+        tile.innerHTML = `
+          <span class="champion-tile-name font-display">${c.name}</span>
+          <span class="champion-tile-title font-body">${c.title}</span>
+          ${c.id === excludeId ? '<span class="champion-tile-badge">OTHER SIDE</span>' : ''}
+        `;
+        tile.addEventListener('click', () => {
+          modal.close();
+          onPickCb && onPickCb(c);
+        });
+        gridEl.appendChild(tile);
+      });
+    if (!gridEl.children.length) {
+      gridEl.innerHTML = `<p class="champion-grid-empty font-body">No champion matches "${filter}".</p>`;
+    }
+  }
+
+  searchInput.addEventListener('input', () => renderGrid(searchInput.value));
+  modal.q('[data-role="close"]').addEventListener('click', () => modal.close());
+
+  return {
+    show({ excludeId: exclude = null, onPick } = {}) {
+      excludeId = exclude;
+      onPickCb = onPick;
+      searchInput.value = '';
+      renderGrid('');
+      modal.open();
+    },
+  };
+}
+
+/* ------------------------------------------------------------
+   Match Menu Modal component
+   Consolidates the less-frequent in-match actions (reset scores,
+   back to setup) behind a single icon button so the two player
+   panels can claim almost all of the screen.
+   show() opens it.
+------------------------------------------------------------ */
+function createMatchMenuModal({ onReset, onBack } = {}) {
+  const modal = new Modal('match-menu-overlay', `
+    <div class="relative pop-in hex-frame bg-[#0A1428] px-7 py-8 max-w-sm w-full text-center">
+      <p class="font-display text-[11px] tracking-[0.4em] text-[#C8AA6E] mb-5" style="font-weight:700;">MATCH MENU</p>
+      <div class="flex flex-col gap-3">
+        <button data-role="reset" class="ghost-btn py-3 font-display text-base" style="font-weight:600;">↺ RESET SCORES · SAME CHAMPIONS</button>
+        <button data-role="back" class="danger-btn py-3 font-display text-base" style="font-weight:700;">↩ BACK TO SETUP</button>
+        <button data-role="close" class="ghost-btn py-3 font-display text-base" style="font-weight:600;">CLOSE</button>
+      </div>
+    </div>
+  `);
+
+  modal.q('[data-role="reset"]').addEventListener('click', () => {
+    modal.close();
+    onReset && onReset();
+  });
+  modal.q('[data-role="back"]').addEventListener('click', () => {
+    modal.close();
+    onBack && onBack();
+  });
+  modal.q('[data-role="close"]').addEventListener('click', () => modal.close());
+
+  return {
+    show() { modal.open(); },
+  };
 }
 
 /* ------------------------------------------------------------
